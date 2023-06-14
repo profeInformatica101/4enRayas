@@ -3,6 +3,7 @@ let rows = 6;
 let cols = 7;
 let cellSize = 80;
 let currentPlayer = 1;
+let gameOver = false; // Añade esta línea
 
 function setup() {
     let canvas = createCanvas(cols*cellSize, rows*cellSize);
@@ -49,6 +50,40 @@ function checkWin(player) {
     }
     return false;
 }
+
+function makeMove(col, player) {
+    if (gameOver) return; // Si el juego ha terminado, no permita más movimientos
+    for(let j = rows - 1; j >= 0; j--) {
+        if (board[j][col] === 0) {
+            board[j][col] = player;
+            if (checkWin(player)) {
+                console.log(`¡El jugador ${player} ha ganado!`);
+                gameOver = true; // Si un jugador gana, marca el juego como terminado
+            }
+            return;
+        }
+    }
+}
+
+function mousePressed() {
+    if (currentPlayer === 1) {
+        let col = floor(mouseX / cellSize);
+        makeMove(col, currentPlayer);
+        if (!gameOver) currentPlayer = 2; // Cambia al turno del AI si el juego no ha terminado
+    }
+}
+
+function aiMove() {
+    if (currentPlayer === 2) {
+        let col = floor(random(cols));
+        makeMove(col, currentPlayer);
+        if (!gameOver){
+            currentPlayer = 1; // Cambia al turno del humano si el juego no ha terminado
+            aiMove();
+        } 
+    }
+}
+
 function draw() {
     background(255);
     for(let j = 0; j < rows; j++) {
@@ -62,18 +97,5 @@ function draw() {
             ellipse(x + cellSize/2, y + cellSize/2, cellSize*0.8, cellSize*0.8);
         }
     }
+    aiMove();
 }
-
-function mousePressed() {
-    let col = floor(mouseX / cellSize);
-    for(let j = rows - 1; j >= 0; j--) {
-        if (board[j][col] === 0) {
-            board[j][col] = currentPlayer;
-            if (checkWin(currentPlayer)) {
-                console.log(`¡El jugador ${currentPlayer} ha ganado!`);
-            }
-            currentPlayer = (currentPlayer % 2) + 1;
-            break;
-        }
-    }
-}   
